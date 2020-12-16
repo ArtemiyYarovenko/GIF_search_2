@@ -53,8 +53,22 @@ public class Download_Worker extends Worker {
                     public void onResponse(Call<API_Response> call, Response<API_Response> response) {
                         assert response.body() != null;
                         List<Datum> downloaded_gifs = response.body().getData();
+                        Gson gson = new Gson();
+                        List<Datum> saved;
                         Log.d(TAG, "Данные загружены в кол-ве " + downloaded_gifs.size());
-                        Log.d(TAG, "в хранилище до запроса " );
+                        String Alrdy_saved = sharedPreferences.getString("saved", "null");
+                        if (!Alrdy_saved.equals("null")) {
+                            saved = gson.fromJson(Alrdy_saved, new TypeToken<List<Datum>>(){}.getType());
+                            saved.addAll(downloaded_gifs);
+                            Log.d(TAG, "Кол-во элементов в хранилище" + saved.size());
+                        } else {
+                            saved = downloaded_gifs;
+                            Log.d(TAG, "Кол-во элементов в хранилище" + saved.size());
+                        }
+                        String saver = gson.toJson(saved);
+                        editor.putString("saved", saver);
+                        editor.commit();
+
 
 
 
