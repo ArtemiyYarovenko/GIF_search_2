@@ -32,6 +32,7 @@ public class PollService extends IntentService {
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
     Retrofit r = Retrofit_Item.getRetrofit();
 
+
     public PollService() {
         super(TAG);
     }
@@ -70,7 +71,6 @@ public class PollService extends IntentService {
             Log.i(TAG, "Нет соединения: " + intent);
             return;
         }
-        Log.i(TAG, "Служба запущена ff: " + intent);
         Retrofit retrofit = Retrofit_Item.getRetrofit();
         retrofit.create(Retrofit_Caller.class)
                 .getRecent("lkrJDzDTVXJtbt8lPVphAMKC05nGDLji", "50", "R")
@@ -80,7 +80,22 @@ public class PollService extends IntentService {
                             public void onResponse(Call<API_Response> call, Response<API_Response> response) {
                                 assert response.body() != null;
                                 List<Datum> provided_values = response.body().getData();
-                                Log.i(TAG, "Служба запущена ff: " + provided_values);
+
+                                Log.i(TAG, "загружены данные: " + provided_values);
+                                Log.i(TAG, "lifehack anime do " + Anime.storage);
+                                List<Datum> new_values =  provided_values;
+                                if (Anime.storage != null){
+                                    new_values.removeAll(Anime.storage);
+                                }
+                                int Amount_of_new_values = new_values.size();
+                                Log.i(TAG, "количество новых гифок " + Amount_of_new_values);
+                                Log.i(TAG, "новые гифки " + new_values);
+
+                                Anime.storage = provided_values;
+                                Log.i(TAG, "lifehack anime posle " + Anime.storage);
+
+
+
                             }
 
                             @Override
