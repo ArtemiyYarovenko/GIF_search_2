@@ -1,4 +1,4 @@
-package com.example.gif_app.main.RV_Adapter;
+package com.example.gif_app.RV_Adapter;
 
 import androidx.recyclerview.widget.RecyclerView;
 

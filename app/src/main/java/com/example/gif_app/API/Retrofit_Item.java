@@ -1,4 +1,4 @@
-package com.example.gif_app.api;
+package com.example.gif_app.API;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

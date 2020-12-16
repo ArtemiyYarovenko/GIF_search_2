@@ -1,4 +1,4 @@
-package com.example.gif_app;
+package com.example.gif_app.Workers;
 
 import com.Object.Datum;
 

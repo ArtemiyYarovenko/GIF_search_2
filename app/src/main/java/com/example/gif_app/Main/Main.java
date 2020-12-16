@@ -1,33 +1,42 @@
-package com.example.gif_app.main;
+package com.example.gif_app.Main;
 
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 
+import android.content.Context;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.Object.Datum;
 import com.Object.API_Response;
-import com.Object.Images;
-import com.example.gif_app.PollService;
+import com.example.gif_app.Workers.Download_Worker;
 import com.example.gif_app.R;
-import com.example.gif_app.api.Retrofit_Item;
-import com.example.gif_app.api.Retrofit_Caller;
+import com.example.gif_app.API.Retrofit_Item;
+import com.example.gif_app.API.Retrofit_Caller;
 import com.example.gif_app.DataBase.GIF_DB;
-import com.example.gif_app.main.RV_Adapter.Gif_Adapter;
-import com.example.gif_app.main.RV_Adapter.Gif_Adapter_2;
+import com.example.gif_app.RV_Adapter.Gif_Adapter;
+import com.example.gif_app.RV_Adapter.Gif_Adapter_2;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -80,7 +89,20 @@ public class Main
 
         retrofit = Retrofit_Item.getRetrofit();
 
-        PollService.setServiceAlarm(this, true);
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .build();
+
+        PeriodicWorkRequest MyWorkReq = new PeriodicWorkRequest.Builder
+                (Download_Worker.class, 15, TimeUnit.MINUTES)
+                .addTag("Repeat_Download")
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueue(MyWorkReq);
+
+
+
 
         //возращение состояния ресайклер вью
         if(savedInstanceState !=null) {
