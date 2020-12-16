@@ -15,6 +15,7 @@ import android.widget.EditText;
 import com.Object.Datum;
 import com.Object.API_Response;
 import com.Object.Images;
+import com.example.gif_app.PollService;
 import com.example.gif_app.R;
 import com.example.gif_app.api.Retrofit_Item;
 import com.example.gif_app.api.Retrofit_Caller;
@@ -72,9 +73,14 @@ public class Main
         gridLayoutManager = new GridLayoutManager(this, SpanCount);
         gridLayoutManager.setItemPrefetchEnabled(true);
         gridLayoutManager.setInitialPrefetchItemCount(6);
+
         recycler_view.setLayoutManager(gridLayoutManager);
+
         DataBase = GIF_DB.getDatabase(this);
+
         retrofit = Retrofit_Item.getRetrofit();
+
+        PollService.setServiceAlarm(this, true);
 
         //возращение состояния ресайклер вью
         if(savedInstanceState !=null) {
