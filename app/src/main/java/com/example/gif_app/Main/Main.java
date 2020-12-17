@@ -10,11 +10,16 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.Object.Datum;
 import com.Object.API_Response;
@@ -25,18 +30,16 @@ import com.example.gif_app.API.Retrofit_Caller;
 import com.example.gif_app.DataBase.GIF_DB;
 import com.example.gif_app.RV_Adapter.Gif_Adapter;
 import com.example.gif_app.RV_Adapter.Gif_Adapter_2;
+import com.example.gif_app.Workers.Notification_Worker;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.Preferences;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -57,22 +60,29 @@ public class Main
     Retrofit retrofit;
 
     private final String KEY_RECYCLER_STATE = "recycler_state";
-    RecyclerView recycler_view;
+    public RecyclerView recycler_view;
     private GIF_DB DataBase;
     private EditText search_keyword;
     Button button_from_database;
     Button button_from_online;
-    Gif_Adapter gif_adapter;
+    public Gif_Adapter gif_adapter;
     GridLayoutManager gridLayoutManager;
     List<Datum> provided_values;
     Type itemsListType = new TypeToken<List<Datum>>() {}.getType();
-
+    Boolean IsLaunchFromNotification = false;
+    SharedPreferences sharedPreferences;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        sharedPreferences = getSharedPreferences("default", 0);
+
+       Intent intent = getIntent();
+        if (intent != null) {
+            IsLaunchFromNotification = intent.getBooleanExtra("Notify", false);
+        }
 
         button_from_database = findViewById(R.id.load_local);
         button_from_online = findViewById(R.id.load_online);
@@ -81,28 +91,13 @@ public class Main
 
         gridLayoutManager = new GridLayoutManager(this, SpanCount);
         gridLayoutManager.setItemPrefetchEnabled(true);
-        gridLayoutManager.setInitialPrefetchItemCount(6);
+        gridLayoutManager.setInitialPrefetchItemCount(50);
 
         recycler_view.setLayoutManager(gridLayoutManager);
 
         DataBase = GIF_DB.getDatabase(this);
 
         retrofit = Retrofit_Item.getRetrofit();
-
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.UNMETERED)
-                .build();
-
-        PeriodicWorkRequest MyWorkReq = new PeriodicWorkRequest.Builder
-                (Download_Worker.class, 15, TimeUnit.MINUTES)
-                .addTag("Repeat_Download")
-                .setConstraints(constraints)
-                .build();
-
-        WorkManager.getInstance(getApplicationContext()).enqueue(MyWorkReq);
-
-
-
 
         //возращение состояния ресайклер вью
         if(savedInstanceState !=null) {
@@ -112,6 +107,10 @@ public class Main
 
             Gif_Adapter gif_adapter = new Gif_Adapter(this, provided_values);
             recycler_view.setAdapter(gif_adapter);
+        }
+
+        if (IsLaunchFromNotification) {
+            redraw();
         }
 
 
@@ -145,6 +144,30 @@ public class Main
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .build();
+
+        PeriodicWorkRequest Download_Req = new PeriodicWorkRequest.Builder
+                (Download_Worker.class, 15, TimeUnit.MINUTES)
+                .addTag("Repeat_Download")
+                .setConstraints(constraints)
+                .build();
+
+        PeriodicWorkRequest Notify_Req = new PeriodicWorkRequest.Builder
+                (Notification_Worker.class, 8, TimeUnit.HOURS)
+                .addTag("Repeat_Notification")
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueue(Download_Req);
+        WorkManager.getInstance(getApplicationContext()).enqueue(Notify_Req);
+
+    }
+
     public void make_call(String q) {
         retrofit.create(Retrofit_Caller.class)
                 .getSearchPhotos(api_key, q, limit, offset, rating)
@@ -163,6 +186,19 @@ public class Main
                     public void onFailure(Call<API_Response> call, Throwable t) {
                     }
                 });
+    }
+
+    // Вызывается, если активити запущена из нотификейшна, заполняя ресайклер вью теми картинками
+    // которые были загружены Download_Workerом в фоновом режиме
+    public void redraw() {
+        Gson gson = new Gson();
+        String cache = sharedPreferences.getString("saved", "");
+        if (!cache.equals("")){
+        List<Datum> saved = gson.fromJson(cache, new TypeToken<List<Datum>>(){}.getType());
+        Collections.shuffle(saved);
+        Gif_Adapter gif_adapter = new Gif_Adapter(this, saved);
+        recycler_view.setAdapter(gif_adapter);}
+
     }
 
     @Override
