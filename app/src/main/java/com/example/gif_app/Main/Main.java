@@ -149,16 +149,18 @@ public class Main
         super.onStop();
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresBatteryNotLow(true)
                 .build();
 
         PeriodicWorkRequest Download_Req = new PeriodicWorkRequest.Builder
-                (Download_Worker.class, 15, TimeUnit.MINUTES)
+                (Download_Worker.class, 45, TimeUnit.MINUTES, 15, TimeUnit.MINUTES)
                 .addTag("Repeat_Download")
                 .setConstraints(constraints)
                 .build();
 
         PeriodicWorkRequest Notify_Req = new PeriodicWorkRequest.Builder
                 (Notification_Worker.class, 8, TimeUnit.HOURS)
+//                .setInitialDelay(8,TimeUnit.HOURS)
                 .addTag("Repeat_Notification")
                 .setConstraints(constraints)
                 .build();
