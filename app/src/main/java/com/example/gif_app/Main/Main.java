@@ -10,16 +10,12 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.Object.Datum;
 import com.Object.API_Response;
@@ -39,7 +35,7 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.prefs.Preferences;
+
 
 import retrofit2.Call;
 import retrofit2.Callback;

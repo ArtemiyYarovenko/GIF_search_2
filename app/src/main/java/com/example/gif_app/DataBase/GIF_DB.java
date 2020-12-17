@@ -8,7 +8,6 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 import com.Object.Datum;
-import com.Object.Images;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

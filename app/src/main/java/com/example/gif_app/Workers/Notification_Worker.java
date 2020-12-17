@@ -59,7 +59,6 @@ public class Notification_Worker extends Worker {
         notificationManager.createNotificationChannel(notificationChannel);
         notificationManager.notify(notificationId, builder.build());
 
-        //notificationManagerCompat.notify(notificationId,builder.build());
     }
 
 

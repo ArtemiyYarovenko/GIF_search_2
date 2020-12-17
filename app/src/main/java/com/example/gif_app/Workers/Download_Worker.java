@@ -3,7 +3,7 @@ package com.example.gif_app.Workers;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import android.preference.PreferenceManager;
+
 import android.util.Log;
 
 import androidx.annotation.NonNull;
